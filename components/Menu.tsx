@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { MENU_ITEMS } from '../constants';
+import React, { useState, useEffect } from 'react';
+import { getRecipes } from '../lib/supabase-service';
 import { MealKit, CartItem } from '../types';
 
 interface MenuProps {
@@ -27,13 +27,32 @@ const Menu: React.FC<MenuProps> = ({
   boxLimit 
 }) => {
   const [addingId, setAddingId] = useState<string | null>(null);
+  const [menuItems, setMenuItems] = useState<MealKit[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredItems = MENU_ITEMS.filter(item => {
+  // Load recipes from Supabase
+  useEffect(() => {
+    const loadRecipes = async () => {
+      setIsLoading(true);
+      try {
+        const recipes = await getRecipes();
+        setMenuItems(recipes);
+      } catch (error) {
+        console.error('Error loading recipes:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadRecipes();
+  }, []);
+
+  const filteredItems = menuItems.filter(item => {
     if (activeCategory === 'Saved') return savedMealIds.includes(item.id);
     return activeCategory === 'All' || item.category === activeCategory;
   });
 
-  const categories = ['All', 'Modern British', 'Mediterranean', 'Asian Fusion', 'Classic Comfort', 'Saved'];
+  // Get unique categories from loaded recipes
+  const categories = ['All', ...Array.from(new Set(menuItems.map(item => item.category))), 'Saved'];
   const priceMultiplier = peopleCount / 2;
   const currentUniqueCount = cartItems.length;
 
@@ -43,6 +62,19 @@ const Menu: React.FC<MenuProps> = ({
     onAddToCart(item);
     setTimeout(() => setAddingId(null), 800);
   };
+
+  if (isLoading) {
+    return (
+      <section id="menu" className="py-24 bg-white min-h-screen">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center py-20">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-brand-sage"></div>
+            <p className="mt-4 text-brand-ink/40 text-sm uppercase tracking-widest">Loading recipes...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="menu" className="py-24 bg-white min-h-screen">

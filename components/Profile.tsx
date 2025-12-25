@@ -1,7 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UserProfile, MealKit } from '../types';
-import { MOCK_HISTORY, MENU_ITEMS } from '../constants';
+import { getUserOrders, getRecipes } from '../lib/supabase-service';
 
 interface ProfileProps {
   profile: UserProfile;
@@ -13,6 +13,29 @@ interface ProfileProps {
 const Profile: React.FC<ProfileProps> = ({ profile, onUpdate, savedMealIds = [], onSelectSavedMeal }) => {
   const [editing, setEditing] = useState(false);
   const [localProfile, setLocalProfile] = useState(profile);
+  const [orderHistory, setOrderHistory] = useState<any[]>([]);
+  const [recipes, setRecipes] = useState<MealKit[]>([]);
+  const [isLoadingOrders, setIsLoadingOrders] = useState(true);
+
+  // Load order history and recipes from Supabase
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoadingOrders(true);
+      try {
+        const [orders, allRecipes] = await Promise.all([
+          getUserOrders('current-user-id'), // TODO: Get actual user ID
+          getRecipes()
+        ]);
+        setOrderHistory(orders);
+        setRecipes(allRecipes);
+      } catch (error) {
+        console.error('Error loading profile data:', error);
+      } finally {
+        setIsLoadingOrders(false);
+      }
+    };
+    loadData();
+  }, []);
 
   const handleSave = () => {
     onUpdate(localProfile);
@@ -228,10 +251,21 @@ const Profile: React.FC<ProfileProps> = ({ profile, onUpdate, savedMealIds = [],
              </div>
              
              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {MOCK_HISTORY.map(order => (
+                {isLoadingOrders ? (
+                  <div className="col-span-2 text-center py-8">
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-sage"></div>
+                    <p className="mt-2 text-brand-ink/40 text-xs">Loading orders...</p>
+                  </div>
+                ) : orderHistory.length === 0 ? (
+                  <div className="col-span-2 text-center py-8">
+                    <p className="text-brand-ink/40 text-sm">No orders yet</p>
+                  </div>
+                ) : orderHistory.map(order => (
                   <div key={order.id} className="p-6 bg-white border border-black/5 rounded group/item hover:border-brand-terracotta/20 transition-all cursor-pointer">
                     <div className="flex justify-between items-start mb-4">
-                      <span className="text-[8px] font-bold text-brand-ink/20 uppercase tracking-[0.2em]">{order.date}</span>
+                      <span className="text-[8px] font-bold text-brand-ink/20 uppercase tracking-[0.2em]">
+                        {new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </span>
                       <div className="w-1.5 h-1.5 bg-brand-sage rounded-full"></div>
                     </div>
                     <p className="font-serif text-lg tracking-tight italic text-brand-ink group-hover/item:text-brand-terracotta transition-colors leading-tight">{order.meals[0]}</p>
