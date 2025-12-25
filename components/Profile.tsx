@@ -76,13 +76,6 @@ const Profile: React.FC<ProfileProps> = ({ profile, onUpdate, savedMealIds = [],
           
           {/* Main Card: Subscription Stats (Spans 8 cols) */}
           <div className="md:col-span-8 bg-white border border-black/[0.03] rounded-lg p-10 md:p-14 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-12 opacity-[0.03] pointer-events-none group-hover:scale-105 transition-transform duration-1000">
-              <svg className="w-64 h-64" fill="currentColor" viewBox="0 0 40 40">
-                <path d="M10 20C10 14.4772 14.4772 10 20 10V30C14.4772 30 10 25.5228 10 20Z"/>
-                <path d="M20 10C25.5228 10 30 14.4772 30 20C30 25.5228 25.5228 30 20 30V10Z" opacity="0.4"/>
-              </svg>
-            </div>
-
             <div className="relative z-10 space-y-12">
               <div className="flex justify-between items-start">
                 <div className="space-y-2">

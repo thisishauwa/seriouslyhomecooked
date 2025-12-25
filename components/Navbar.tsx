@@ -50,9 +50,9 @@ const Navbar: React.FC<NavbarProps> = ({
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             <div className="flex space-x-8 text-[10px] tracking-widest uppercase font-bold text-brand-ink/30">
-              <button onClick={onGoPlans} className="hover:text-brand-ink transition-colors">Meal Plans</button>
-              <button onClick={onGoMenu} className="hover:text-brand-ink transition-colors">The Menu</button>
-              <button onClick={onGoJournal} className="hover:text-brand-ink transition-colors">Journal</button>
+              <button onClick={onGoPlans} className="hover:text-brand-ink transition-colors uppercase tracking-widest font-bold">MEAL PLANS</button>
+              <button onClick={onGoMenu} className="hover:text-brand-ink transition-colors uppercase tracking-widest font-bold">THE MENU</button>
+              <button onClick={onGoJournal} className="hover:text-brand-ink transition-colors uppercase tracking-widest font-bold">JOURNAL</button>
             </div>
             
             <div className="flex items-center space-x-4">
@@ -156,19 +156,19 @@ const Navbar: React.FC<NavbarProps> = ({
                 onClick={() => handleNavClick(onGoPlans)}
                 className="text-left text-sm tracking-widest uppercase font-bold text-brand-ink hover:text-brand-sage transition-colors"
               >
-                Meal Plans
+                MEAL PLANS
               </button>
               <button 
                 onClick={() => handleNavClick(onGoMenu)}
                 className="text-left text-sm tracking-widest uppercase font-bold text-brand-ink hover:text-brand-sage transition-colors"
               >
-                The Menu
+                THE MENU
               </button>
               <button 
                 onClick={() => handleNavClick(onGoJournal)}
                 className="text-left text-sm tracking-widest uppercase font-bold text-brand-ink hover:text-brand-sage transition-colors"
               >
-                Journal
+                JOURNAL
               </button>
 
               <div className="border-t border-black/5 pt-6 space-y-4">

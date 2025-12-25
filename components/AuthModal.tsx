@@ -87,12 +87,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onLogin, onAdminLogin })
       
       <div className="relative bg-white w-full max-w-md rounded-lg p-10 shadow-2xl animate-in slide-in-from-bottom-4 duration-500 overflow-hidden">
         <div className="text-center mb-8">
-          <div className="flex justify-center mb-6">
-            <svg className="w-10 h-10" viewBox="0 0 40 40" fill="none">
-              <path d="M10 20C10 14.4772 14.4772 10 20 10V30C14.4772 30 10 25.5228 10 20Z" fill="#1A1C19"/>
-              <path d="M20 10C25.5228 10 30 14.4772 30 20C30 25.5228 25.5228 30 20 30V10Z" fill="#C17D5C"/>
-            </svg>
-          </div>
           <h2 className="font-serif text-3xl mb-2 tracking-tighter leading-none">
             {isRegister ? 'Create Your Account' : 'Welcome Home'}
           </h2>
