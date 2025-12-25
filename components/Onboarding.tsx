@@ -41,7 +41,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
         
         {/* Progress bar */}
         <div className="flex gap-2 mb-12">
-          {[1, 2, 3].map(s => (
+          {[1, 2, 3, 4].map(s => (
             <div key={s} className={`h-1 flex-1 rounded transition-colors duration-500 ${step >= s ? 'bg-brand-sage' : 'bg-black/5'}`} />
           ))}
         </div>
@@ -180,7 +180,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
         {step === 3 && (
           <div className="space-y-10 animate-in fade-in duration-500">
             <div>
-              <span className="text-brand-terracotta text-[10px] tracking-[0.4em] uppercase font-bold mb-4 block">Step 3 of 3</span>
+              <span className="text-brand-terracotta text-[10px] tracking-[0.4em] uppercase font-bold mb-4 block">Step 3 of 4</span>
               <h2 className="font-serif text-5xl tracking-tighter italic text-brand-ink">Cooking Skill.</h2>
               <p className="text-brand-ink/40 font-serif italic text-lg mt-2">What's your comfort level in the kitchen?</p>
             </div>
@@ -208,10 +208,74 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             <div className="flex gap-4 pt-8">
               <button onClick={prevStep} className="px-8 py-5 border border-black/5 rounded text-[11px] uppercase tracking-widest font-bold hover:bg-black/5">Back</button>
               <button 
-                onClick={() => onComplete(profile)}
+                onClick={nextStep}
                 className="flex-1 bg-brand-sage text-white py-5 rounded text-[11px] uppercase tracking-[0.2em] font-bold hover:bg-brand-ink transition-all shadow-lg"
               >
-                Start Cooking
+                Continue
+              </button>
+            </div>
+          </div>
+        )}
+
+        {step === 4 && (
+          <div className="space-y-10 animate-in fade-in duration-500">
+            <div>
+              <span className="text-brand-terracotta text-[10px] tracking-[0.4em] uppercase font-bold mb-4 block">Step 4 of 4</span>
+              <h2 className="font-serif text-5xl tracking-tighter italic text-brand-ink">Choose Your Plan.</h2>
+              <p className="text-brand-ink/40 font-serif italic text-lg mt-2">Start your culinary journey today.</p>
+            </div>
+
+            {/* Plan Summary */}
+            <div className="bg-brand-cream/50 border border-black/5 rounded-lg p-8">
+              <h3 className="font-serif text-2xl tracking-tighter text-brand-ink mb-6">Your Selection</h3>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-brand-ink/60 text-sm">People</span>
+                  <span className="font-bold text-brand-ink">{profile.people}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-brand-ink/60 text-sm">Meals per week</span>
+                  <span className="font-bold text-brand-ink">{profile.recipesPerWeek}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-brand-ink/60 text-sm">Skill level</span>
+                  <span className="font-bold text-brand-ink">{profile.skillLevel}</span>
+                </div>
+                <div className="border-t border-black/10 pt-4 mt-4 flex justify-between items-center">
+                  <span className="text-brand-ink font-bold">Weekly Total</span>
+                  <span className="font-serif text-3xl text-brand-sage">£{(profile.people * profile.recipesPerWeek * 8.5).toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Payment Options */}
+            <div className="space-y-4">
+              <button 
+                onClick={() => {
+                  // TODO: Integrate with Stripe or payment provider
+                  alert('Payment integration coming soon! For now, proceeding with inactive subscription.');
+                  onComplete(profile);
+                }}
+                className="w-full bg-brand-ink text-white py-6 rounded text-[11px] uppercase tracking-[0.2em] font-bold hover:bg-brand-sage transition-all shadow-lg"
+              >
+                Subscribe & Pay Now
+              </button>
+              
+              <button 
+                onClick={() => onComplete(profile)}
+                className="w-full border-2 border-brand-ink/10 text-brand-ink py-6 rounded text-[11px] uppercase tracking-[0.2em] font-bold hover:bg-brand-ink/5 transition-all"
+              >
+                Skip & Pay Later
+              </button>
+            </div>
+
+            <p className="text-center text-brand-ink/40 text-xs font-serif italic">
+              No commitment. Cancel anytime before Monday midnight.
+            </p>
+
+            <div className="pt-4">
+              <button onClick={prevStep} className="text-brand-ink/40 text-[10px] uppercase tracking-widest font-bold hover:text-brand-ink">
+                ← Back
               </button>
             </div>
           </div>

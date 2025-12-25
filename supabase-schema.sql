@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   preferences TEXT[] DEFAULT '{}',
   
   -- Subscription info
-  subscription_status TEXT DEFAULT 'active' CHECK (subscription_status IN ('active', 'paused', 'cancelled')),
+  subscription_status TEXT DEFAULT 'inactive' CHECK (subscription_status IN ('active', 'inactive', 'paused', 'cancelled')),
   next_delivery_date DATE,
   delivery_day TEXT DEFAULT 'Thursday' CHECK (delivery_day IN ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')),
   

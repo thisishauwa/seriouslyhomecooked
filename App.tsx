@@ -40,7 +40,7 @@ const App: React.FC = () => {
   // Auth states
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
-  const [userName, setUserName] = useState("John");
+  const [userName, setUserName] = useState("User");
   const [userId, setUserId] = useState<string | null>(null);
   
   // Admin states
@@ -53,6 +53,14 @@ const App: React.FC = () => {
       if (session?.user) {
         setIsLoggedIn(true);
         setUserId(session.user.id);
+        
+        // Get name from Google metadata as fallback
+        const googleName = session.user.user_metadata?.full_name || 
+                          session.user.user_metadata?.name || 
+                          session.user.email?.split('@')[0] || 
+                          'User';
+        setUserName(googleName);
+        
         loadUserData(session.user.id);
       }
     });
@@ -62,6 +70,14 @@ const App: React.FC = () => {
       if (session?.user) {
         setIsLoggedIn(true);
         setUserId(session.user.id);
+        
+        // Get name from Google metadata as fallback
+        const googleName = session.user.user_metadata?.full_name || 
+                          session.user.user_metadata?.name || 
+                          session.user.email?.split('@')[0] || 
+                          'User';
+        setUserName(googleName);
+        
         await loadUserData(session.user.id);
         
         // Check if admin
@@ -72,6 +88,7 @@ const App: React.FC = () => {
       } else {
         setIsLoggedIn(false);
         setUserId(null);
+        setUserName('User');
         setIsAdminLoggedIn(false);
       }
     });
@@ -86,10 +103,16 @@ const App: React.FC = () => {
   // Load user data from Supabase
   const loadUserData = async (uid: string) => {
     try {
+      console.log('Loading user data for:', uid);
+      
       // Load profile
       const profile = await getUserProfile(uid);
+      console.log('Profile loaded:', profile);
+      
       if (profile) {
-        setUserName(profile.full_name || 'User');
+        const fullName = profile.full_name || profile.email?.split('@')[0] || 'User';
+        console.log('Setting user name to:', fullName);
+        setUserName(fullName);
         setUserProfile({
           people: profile.people || 2,
           recipesPerWeek: profile.recipes_per_week || 3,
@@ -98,6 +121,8 @@ const App: React.FC = () => {
           preferences: profile.preferences || [],
           createdAt: profile.created_at,
         });
+      } else {
+        console.warn('No profile found for user:', uid);
       }
 
       // Load cart
@@ -196,13 +221,26 @@ const App: React.FC = () => {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setIsLoggedIn(false);
-    setUserId(null);
-    setCart([]);
-    setSavedMealIds([]);
-    localStorage.setItem('sh_auth', 'false');
-    setView('HOME');
+    try {
+      await supabase.auth.signOut();
+      setIsLoggedIn(false);
+      setUserId(null);
+      setUserName('User');
+      setCart([]);
+      setSavedMealIds([]);
+      setUserProfile({
+        people: 2,
+        recipesPerWeek: 3,
+        skillLevel: 'All',
+        allergies: [],
+        preferences: []
+      });
+      localStorage.clear(); // Clear all localStorage
+      setView('HOME');
+      window.location.reload(); // Force reload to clear any cached state
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
   const handleOrderComplete = async () => {
