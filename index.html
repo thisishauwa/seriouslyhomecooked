@@ -1,0 +1,100 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seriously Homecooked | Sophisticated Meal Kits</title>
+    <!-- Geist for body (simulated via Inter), EB Garamond for headers -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'system-ui', 'sans-serif'], // Geist-like clean sans
+              serif: ['EB Garamond', 'serif'],
+            },
+            colors: {
+              brand: {
+                sage: '#4A5D4E',
+                cream: '#FDFBF7',
+                terracotta: '#C17D5C',
+                ink: '#1A1C19',
+                gold: '#B08D57',
+                clay: '#F2F2F2'
+              }
+            },
+            borderRadius: {
+              'lg': '8px',   // For bigger boxes
+              'DEFAULT': '4px', // For smaller buttons
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body {
+        background-color: #FFFFFF;
+        color: #1A1C19;
+        -webkit-font-smoothing: antialiased;
+        scroll-behavior: smooth;
+        font-feature-settings: "cv11", "ss01";
+      }
+      
+      h1, h2, h3, h4, .font-serif {
+        letter-spacing: -0.04em !important; /* Reduced kerning */
+        line-height: 1.05 !important;      /* Reduced line height */
+      }
+
+      .bento-card {
+        background: #F9F9F9;
+        border-radius: 8px; /* Standardized to 8px */
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0,0,0,0.05);
+      }
+      .bento-card:hover {
+        background: #FFFFFF;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+      }
+      
+      .circle-mask {
+        clip-path: circle(42% at 50% 50%);
+        transition: clip-path 0.4s ease;
+      }
+      .group:hover .circle-mask {
+        clip-path: circle(48% at 50% 50%);
+      }
+      
+      /* Force border radius overrides for the new design spec */
+      .rounded-2xl, .rounded-3xl, .rounded-4xl, .rounded-5xl, .rounded-\[2\.5rem\], .rounded-\[3rem\], .rounded-\[4rem\] {
+        border-radius: 8px !important;
+      }
+      .rounded-full {
+        border-radius: 4px !important; /* Smaller buttons spec */
+      }
+      /* Special case for actual circular masks/avatars */
+      .avatar-circle, .circle-mask-container {
+        border-radius: 50% !important;
+      }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.34.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body>
+    <div id="root"></div>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
