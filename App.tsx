@@ -17,6 +17,9 @@ import Admin from './components/Admin';
 import AdminLogin from './components/AdminLogin';
 import { CartItem, MealKit, View, BoxConfig, Producer, UserProfile } from './types';
 import { PRODUCERS, MOCK_HISTORY } from './constants';
+import { supabase } from './lib/supabase';
+import { getUserProfile, updateUserProfile, updateCart, getCart, getSavedRecipes, saveRecipe, unsaveRecipe, checkIsAdmin } from './lib/supabase-service';
+import './lib/supabase-test'; // Test Supabase connection in dev mode
 
 const App: React.FC = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -37,36 +40,98 @@ const App: React.FC = () => {
   // Auth states
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
-  const [userName] = useState("John");
+  const [userName, setUserName] = useState("John");
+  const [userId, setUserId] = useState<string | null>(null);
   
   // Admin states
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
 
-  // Persistence
+  // Initialize auth state and listen for changes
   useEffect(() => {
-    const saved = localStorage.getItem('sh_cart');
-    if (saved) setCart(JSON.parse(saved));
-    const savedFavs = localStorage.getItem('sh_saved_ids');
-    if (savedFavs) setSavedMealIds(JSON.parse(savedFavs));
-    const savedAuth = localStorage.getItem('sh_auth');
-    if (savedAuth === 'true') setIsLoggedIn(true);
-    const savedProfile = localStorage.getItem('sh_profile');
-    if (savedProfile) setUserProfile(JSON.parse(savedProfile));
+    // Check current session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setIsLoggedIn(true);
+        setUserId(session.user.id);
+        loadUserData(session.user.id);
+      }
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session?.user) {
+        setIsLoggedIn(true);
+        setUserId(session.user.id);
+        await loadUserData(session.user.id);
+        
+        // Check if admin
+        const isAdmin = await checkIsAdmin(session.user.id);
+        if (isAdmin) {
+          setIsAdminLoggedIn(true);
+        }
+      } else {
+        setIsLoggedIn(false);
+        setUserId(null);
+        setIsAdminLoggedIn(false);
+      }
+    });
+
+    // Load admin auth from localStorage (for hardcoded admin)
     const adminAuth = localStorage.getItem('admin_auth');
     if (adminAuth === 'true') setIsAdminLoggedIn(true);
+
+    return () => subscription.unsubscribe();
   }, []);
 
+  // Load user data from Supabase
+  const loadUserData = async (uid: string) => {
+    try {
+      // Load profile
+      const profile = await getUserProfile(uid);
+      if (profile) {
+        setUserName(profile.full_name || 'User');
+        setUserProfile({
+          people: profile.people || 2,
+          recipesPerWeek: profile.recipes_per_week || 3,
+          skillLevel: profile.skill_level || 'All',
+          allergies: profile.allergies || [],
+          preferences: profile.preferences || [],
+        });
+      }
+
+      // Load cart
+      const cartData = await getCart(uid);
+      if (cartData && cartData.length > 0) {
+        setCart(cartData);
+      }
+
+      // Load saved recipes
+      const savedIds = await getSavedRecipes(uid);
+      if (savedIds && savedIds.length > 0) {
+        setSavedMealIds(savedIds);
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+    }
+  };
+
+  // Sync cart to Supabase when it changes
   useEffect(() => {
+    if (userId && isLoggedIn) {
+      updateCart(userId, cart).catch(err => console.error('Error syncing cart:', err));
+    }
+    // Also keep localStorage as backup
     localStorage.setItem('sh_cart', JSON.stringify(cart));
-  }, [cart]);
+  }, [cart, userId, isLoggedIn]);
 
+  // Sync profile to Supabase when it changes
   useEffect(() => {
-    localStorage.setItem('sh_saved_ids', JSON.stringify(savedMealIds));
-  }, [savedMealIds]);
-
-  useEffect(() => {
+    if (userId && isLoggedIn) {
+      updateUserProfile(userId, userProfile).catch(err => console.error('Error syncing profile:', err));
+    }
+    // Also keep localStorage as backup
     localStorage.setItem('sh_profile', JSON.stringify(userProfile));
-  }, [userProfile]);
+  }, [userProfile, userId, isLoggedIn]);
 
   const addToCart = (meal: MealKit) => {
     const isAlreadyInCart = cart.some(item => item.id === meal.id);
@@ -87,10 +152,25 @@ const App: React.FC = () => {
     }
   };
 
-  const toggleSaveMeal = (id: string) => {
-    setSavedMealIds(prev => 
-      prev.includes(id) ? prev.filter(mid => mid !== id) : [...prev, id]
-    );
+  const toggleSaveMeal = async (id: string) => {
+    if (userId && isLoggedIn) {
+      try {
+        if (savedMealIds.includes(id)) {
+          await unsaveRecipe(userId, id);
+          setSavedMealIds(prev => prev.filter(mid => mid !== id));
+        } else {
+          await saveRecipe(userId, id);
+          setSavedMealIds(prev => [...prev, id]);
+        }
+      } catch (error) {
+        console.error('Error toggling saved recipe:', error);
+      }
+    } else {
+      // Fallback to local state if not logged in
+      setSavedMealIds(prev => 
+        prev.includes(id) ? prev.filter(mid => mid !== id) : [...prev, id]
+      );
+    }
   };
 
   const updateQuantity = (id: string, delta: number) => {
@@ -114,13 +194,35 @@ const App: React.FC = () => {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     setIsLoggedIn(false);
+    setUserId(null);
+    setCart([]);
+    setSavedMealIds([]);
     localStorage.setItem('sh_auth', 'false');
     setView('HOME');
   };
 
-  const handleOrderComplete = () => {
+  const handleOrderComplete = async () => {
+    if (userId && isLoggedIn) {
+      try {
+        const priceMultiplier = userProfile.people / 2;
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * priceMultiplier) * item.quantity, 0);
+        const shipping = 4.95;
+        const total = subtotal + shipping;
+        
+        // Create order in Supabase
+        const { createOrder } = await import('./lib/supabase-service');
+        await createOrder(userId, cart, total);
+        
+        // Clear cart in Supabase
+        await updateCart(userId, []);
+      } catch (error) {
+        console.error('Error creating order:', error);
+      }
+    }
+    
     setCart([]);
     setView('SUCCESS');
     window.scrollTo(0, 0);

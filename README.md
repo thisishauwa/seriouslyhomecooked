@@ -2,34 +2,49 @@
 <img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
-# Run and deploy your AI Studio app
+# Seriously Homecooked
 
-This contains everything you need to run your app locally.
+A sophisticated meal kit subscription service with an elegant admin dashboard.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1aVVM041hQtpSo0iJpVS4xy1e_9SEUT5K
+## Features
 
-## Run Locally
+- 🍳 **Recipe Management**: Add, edit, and organize hundreds of recipes
+- 📅 **Weekly Menu Curation**: Set featured recipes for each week
+- 👥 **User Management**: Handle subscriptions and user accounts
+- 🔍 **Advanced Filtering**: Search and filter recipes by category, skill level
+- 📦 **Bulk Operations**: Upload recipes via CSV/Markdown, bulk delete
+- 🎨 **Beautiful Design**: Minimal, elegant UI with brand consistency
+- 🔐 **Google Sign-In**: Secure authentication with Supabase
+- 📱 **Responsive**: Works perfectly on all devices
 
-**Prerequisites:**  Node.js
+## Quick Start
+
+**Prerequisites:**  Node.js (v20.19.0 or higher)
 
 1. Install dependencies:
    ```bash
    npm install
    ```
 
-2. Set up environment variables:
+2. Set up environment:
    ```bash
-   # Copy the example env file
    cp env.example .env.local
-   
-   # Edit .env.local and add your Gemini API key
-   # Get your API key from: https://makersuite.google.com/app/apikey
+   # Edit .env.local with your Supabase and Google OAuth credentials
    ```
 
 3. Run the app:
    ```bash
    npm run dev
    ```
+
+📖 **For detailed setup instructions**, see [SETUP.md](./SETUP.md)
+
+This includes:
+- Complete Supabase configuration
+- Google OAuth setup
+- Database schema setup
+- Admin user creation
+- Troubleshooting guide
 
 ## Admin Dashboard
 
