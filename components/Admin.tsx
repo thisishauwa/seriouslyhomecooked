@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { MealKit, Ingredient, CookingStep, Producer, JournalEntry } from '../types';
-import { MENU_ITEMS, PRODUCERS, JOURNAL_ENTRIES } from '../constants';
+import { PRODUCERS, JOURNAL_ENTRIES } from '../constants';
 import { 
   getRecipes, 
   getAllUsers, 
@@ -97,7 +97,7 @@ const Admin: React.FC<AdminProps> = ({ onLogout }) => {
     try {
       // Load recipes
       const recipesData = await getRecipes();
-      setRecipes(recipesData.length > 0 ? recipesData : MENU_ITEMS);
+      setRecipes(recipesData);
 
       // Load users
       const usersData = await getAllUsers();
@@ -130,8 +130,7 @@ const Admin: React.FC<AdminProps> = ({ onLogout }) => {
 
     } catch (error) {
       console.error('Error loading admin data:', error);
-      // Fallback to constants if Supabase fails
-      setRecipes(MENU_ITEMS);
+      // Fallback to constants if Supabase fails (only for producers and journal)
       setProducers(PRODUCERS);
       setJournalEntries(JOURNAL_ENTRIES);
     } finally {

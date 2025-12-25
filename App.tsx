@@ -228,8 +228,18 @@ const App: React.FC = () => {
     window.scrollTo(0, 0);
   };
 
-  const handleUpdateProfile = (profile: UserProfile) => {
+  const handleUpdateProfile = async (profile: UserProfile) => {
     setUserProfile(profile);
+    
+    // Save to Supabase if user is logged in
+    if (userId) {
+      try {
+        await updateUserProfile(userId, profile);
+        console.log('Profile updated successfully in Supabase');
+      } catch (error) {
+        console.error('Error updating profile in Supabase:', error);
+      }
+    }
   };
 
   const handleAdminLogin = () => {

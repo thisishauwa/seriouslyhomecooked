@@ -47,7 +47,8 @@ const Profile: React.FC<ProfileProps> = ({ profile, onUpdate, savedMealIds = [],
     setEditing(false);
   };
 
-  const savedMeals = MENU_ITEMS.filter(item => savedMealIds.includes(item.id));
+  // Filter saved meals from loaded recipes
+  const savedMeals = recipes.filter(item => savedMealIds.includes(item.id));
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] pt-32 pb-24 px-6 overflow-x-hidden">
