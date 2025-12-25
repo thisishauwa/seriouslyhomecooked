@@ -8,9 +8,10 @@ interface ProfileProps {
   onUpdate: (profile: UserProfile) => void;
   savedMealIds?: string[];
   onSelectSavedMeal?: (meal: MealKit) => void;
+  userId?: string | null;
 }
 
-const Profile: React.FC<ProfileProps> = ({ profile, onUpdate, savedMealIds = [], onSelectSavedMeal }) => {
+const Profile: React.FC<ProfileProps> = ({ profile, onUpdate, savedMealIds = [], onSelectSavedMeal, userId }) => {
   const [editing, setEditing] = useState(false);
   const [localProfile, setLocalProfile] = useState(profile);
   const [orderHistory, setOrderHistory] = useState<any[]>([]);
@@ -20,10 +21,15 @@ const Profile: React.FC<ProfileProps> = ({ profile, onUpdate, savedMealIds = [],
   // Load order history and recipes from Supabase
   useEffect(() => {
     const loadData = async () => {
+      if (!userId) {
+        setIsLoadingOrders(false);
+        return;
+      }
+      
       setIsLoadingOrders(true);
       try {
         const [orders, allRecipes] = await Promise.all([
-          getUserOrders('current-user-id'), // TODO: Get actual user ID
+          getUserOrders(userId),
           getRecipes()
         ]);
         setOrderHistory(orders);
@@ -35,7 +41,7 @@ const Profile: React.FC<ProfileProps> = ({ profile, onUpdate, savedMealIds = [],
       }
     };
     loadData();
-  }, []);
+  }, [userId]);
 
   const handleSave = () => {
     onUpdate(localProfile);
@@ -49,6 +55,24 @@ const Profile: React.FC<ProfileProps> = ({ profile, onUpdate, savedMealIds = [],
 
   // Filter saved meals from loaded recipes
   const savedMeals = recipes.filter(item => savedMealIds.includes(item.id));
+
+  // Calculate next delivery date (next Thursday from today)
+  const getNextDeliveryDate = () => {
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0 = Sunday, 4 = Thursday
+    const daysUntilThursday = (4 - dayOfWeek + 7) % 7;
+    const nextThursday = new Date(today);
+    nextThursday.setDate(today.getDate() + (daysUntilThursday === 0 ? 7 : daysUntilThursday));
+    return nextThursday.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+  };
+
+  // Calculate total deliveries from order history
+  const totalDeliveries = orderHistory.length;
+
+  // Format member since date from profile or fallback to current date
+  const memberSince = profile.createdAt 
+    ? new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+    : new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] pt-32 pb-24 px-6 overflow-x-hidden">
@@ -165,7 +189,7 @@ const Profile: React.FC<ProfileProps> = ({ profile, onUpdate, savedMealIds = [],
               <div className="flex items-center space-x-12">
                 <div className="space-y-1">
                   <span className="text-[8px] uppercase tracking-widest font-bold text-brand-ink/20 block">Next Delivery</span>
-                  <p className="text-[11px] font-bold text-brand-ink uppercase tracking-wider">Thursday, Oct 24</p>
+                  <p className="text-[11px] font-bold text-brand-ink uppercase tracking-wider">{getNextDeliveryDate()}</p>
                 </div>
                 <div className="space-y-1">
                   <span className="text-[8px] uppercase tracking-widest font-bold text-brand-ink/20 block">Billing Total</span>
@@ -189,11 +213,11 @@ const Profile: React.FC<ProfileProps> = ({ profile, onUpdate, savedMealIds = [],
                 </div>
                 <div className="space-y-1 border-l border-white/10 pl-6">
                   <span className="text-[9px] uppercase tracking-[0.3em] font-bold opacity-30 block">Member Since</span>
-                  <span className="text-sm font-bold uppercase tracking-widest">Oct 2024</span>
+                  <span className="text-sm font-bold uppercase tracking-widest">{memberSince}</span>
                 </div>
                 <div className="space-y-1 border-l border-white/10 pl-6">
                    <span className="text-[9px] uppercase tracking-[0.3em] font-bold opacity-30 block">Total Enjoyed</span>
-                   <span className="text-sm font-bold uppercase tracking-widest">14 Deliveries</span>
+                   <span className="text-sm font-bold uppercase tracking-widest">{totalDeliveries} {totalDeliveries === 1 ? 'Delivery' : 'Deliveries'}</span>
                 </div>
               </div>
             </div>

@@ -96,6 +96,7 @@ const App: React.FC = () => {
           skillLevel: profile.skill_level || 'All',
           allergies: profile.allergies || [],
           preferences: profile.preferences || [],
+          createdAt: profile.created_at,
         });
       }
 
@@ -301,6 +302,7 @@ const App: React.FC = () => {
           onSelectSavedMeal={(meal) => {
             setSelectedMeal(meal);
           }}
+          userId={userId}
         />
         <Footer />
         {showAuth && <AuthModal onClose={() => setShowAuth(false)} onLogin={() => handleLogin(false)} onAdminLogin={handleAdminLogin} />}

@@ -62,6 +62,7 @@ export interface UserProfile extends BoxConfig {
   skillLevel: 'Easy' | 'Medium' | 'Advanced' | 'All';
   allergies: string[];
   preferences: string[];
+  createdAt?: string; // ISO date string from Supabase
 }
 
 export type View = 'HOME' | 'PLANS' | 'MENU' | 'CHECKOUT' | 'JOURNAL' | 'PROFILE' | 'ONBOARDING' | 'ADMIN';

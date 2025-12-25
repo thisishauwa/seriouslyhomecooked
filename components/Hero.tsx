@@ -11,6 +11,16 @@ interface HeroProps {
 }
 
 const Hero: React.FC<HeroProps> = ({ onStartPlan, onBrowseMenu, isLoggedIn, userName, config }) => {
+  // Calculate next delivery date (next Thursday from today)
+  const getNextDeliveryDay = () => {
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0 = Sunday, 4 = Thursday
+    const daysUntilThursday = (4 - dayOfWeek + 7) % 7;
+    const nextThursday = new Date(today);
+    nextThursday.setDate(today.getDate() + (daysUntilThursday === 0 ? 7 : daysUntilThursday));
+    return nextThursday.toLocaleDateString('en-US', { weekday: 'long' });
+  };
+
   return (
     <section className="relative pt-32 pb-20 md:pt-40 md:pb-32 bg-white overflow-hidden text-center">
       <div className="max-w-4xl mx-auto px-6 relative z-10">
@@ -22,7 +32,7 @@ const Hero: React.FC<HeroProps> = ({ onStartPlan, onBrowseMenu, isLoggedIn, user
               <span className="italic text-brand-sage font-normal">like</span> for dinner?
             </h1>
             <p className="text-xl md:text-2xl text-brand-ink/30 mb-12 max-w-2xl mx-auto font-serif tracking-tight leading-snug">
-              Your next meal kit for <span className="text-brand-ink font-bold not-italic">{config?.people} people</span> is arriving this Thursday. <br/>
+              Your next meal kit for <span className="text-brand-ink font-bold not-italic">{config?.people} people</span> is arriving this {getNextDeliveryDay()}. <br/>
               Ready to select your meals for next week?
             </p>
           </div>
