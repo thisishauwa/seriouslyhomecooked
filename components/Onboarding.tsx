@@ -1,6 +1,16 @@
 
 import React, { useState } from 'react';
 import { UserProfile } from '../types';
+import { supabase } from '../lib/supabase';
+import { 
+  createSubscription, 
+  generateReference, 
+  getPlanCode, 
+  calculateWeeklyPrice, 
+  toPence,
+  updateSubscriptionStatus,
+  paystackConfig 
+} from '../lib/paystack';
 
 interface OnboardingProps {
   onComplete: (profile: UserProfile) => void;
@@ -17,9 +27,79 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
   });
 
   const [allergyInput, setAllergyInput] = useState('');
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   const nextStep = () => setStep(step + 1);
   const prevStep = () => setStep(step - 1);
+
+  // Handle Paystack payment
+  const handlePaystackPayment = async () => {
+    setIsProcessingPayment(true);
+
+    try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user?.email) {
+        alert('Please sign in to continue');
+        setIsProcessingPayment(false);
+        return;
+      }
+
+      // Calculate amount
+      const weeklyPrice = calculateWeeklyPrice(profile.people, profile.recipesPerWeek);
+      const amountInPence = toPence(weeklyPrice);
+
+      // Get plan code (you'll need to create these plans in Paystack dashboard)
+      const planCode = getPlanCode(profile.people, profile.recipesPerWeek);
+
+      // Create subscription with Paystack
+      createSubscription({
+        reference: generateReference('sub'),
+        email: user.email,
+        amount: amountInPence,
+        publicKey: paystackConfig.publicKey,
+        plan: planCode,
+        metadata: {
+          userId: user.id,
+          people: profile.people,
+          recipesPerWeek: profile.recipesPerWeek,
+          skillLevel: profile.skillLevel,
+        },
+        onSuccess: async (response: any) => {
+          console.log('Payment successful:', response);
+          
+          // Update subscription status in Supabase
+          const success = await updateSubscriptionStatus(user.id, {
+            subscriptionCode: response.subscription?.subscription_code,
+            customerCode: response.customer?.customer_code,
+            authorizationCode: response.authorization?.authorization_code,
+          });
+
+          if (success) {
+            // Update profile with active subscription
+            const updatedProfile = {
+              ...profile,
+              subscriptionStatus: 'active' as const,
+            };
+            onComplete(updatedProfile);
+          } else {
+            alert('Payment successful but failed to update account. Please contact support.');
+          }
+          
+          setIsProcessingPayment(false);
+        },
+        onClose: () => {
+          console.log('Payment popup closed');
+          setIsProcessingPayment(false);
+        },
+      });
+    } catch (error) {
+      console.error('Payment error:', error);
+      alert('Failed to initialize payment. Please try again.');
+      setIsProcessingPayment(false);
+    }
+  };
 
   const toggleAllergy = (allergy: string) => {
     const trimmedAllergy = allergy.trim();
@@ -251,14 +331,11 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             {/* Payment Options */}
             <div className="space-y-4">
               <button 
-                onClick={() => {
-                  // TODO: Integrate with Stripe or payment provider
-                  alert('Payment integration coming soon! For now, proceeding with inactive subscription.');
-                  onComplete(profile);
-                }}
-                className="w-full bg-brand-ink text-white py-6 rounded text-[11px] uppercase tracking-[0.2em] font-bold hover:bg-brand-sage transition-all shadow-lg"
+                onClick={handlePaystackPayment}
+                disabled={isProcessingPayment}
+                className="w-full bg-brand-ink text-white py-6 rounded text-[11px] uppercase tracking-[0.2em] font-bold hover:bg-brand-sage transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Subscribe & Pay Now
+                {isProcessingPayment ? 'Processing...' : 'Subscribe & Pay Now'}
               </button>
               
               <button 
