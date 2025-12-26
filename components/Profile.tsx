@@ -74,6 +74,14 @@ const Profile: React.FC<ProfileProps> = ({ profile, onUpdate, savedMealIds = [],
     ? new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
     : new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 
+  // Check if user has active subscription
+  const hasActiveSubscription = profile.subscriptionStatus === 'active';
+
+  // Calculate member tier based on order count
+  const memberTier = totalDeliveries >= 20 ? 'Platinum' : 
+                     totalDeliveries >= 10 ? 'Gold' : 
+                     totalDeliveries >= 5 ? 'Silver' : 'Bronze';
+
   return (
     <div className="min-h-screen bg-[#FAFAFA] pt-32 pb-24 px-6 overflow-x-hidden">
       <div className="max-w-7xl mx-auto">
@@ -185,19 +193,30 @@ const Profile: React.FC<ProfileProps> = ({ profile, onUpdate, savedMealIds = [],
               </div>
             </div>
 
-            <div className="mt-16 pt-10 border-t border-black/[0.05] flex flex-wrap gap-8 items-center justify-between">
-              <div className="flex items-center space-x-12">
-                <div className="space-y-1">
-                  <span className="text-[8px] uppercase tracking-widest font-bold text-brand-ink/20 block">Next Delivery</span>
-                  <p className="text-[11px] font-bold text-brand-ink uppercase tracking-wider">{getNextDeliveryDate()}</p>
+            {hasActiveSubscription ? (
+              <div className="mt-16 pt-10 border-t border-black/[0.05] flex flex-wrap gap-8 items-center justify-between">
+                <div className="flex items-center space-x-12">
+                  <div className="space-y-1">
+                    <span className="text-[8px] uppercase tracking-widest font-bold text-brand-ink/20 block">Next Delivery</span>
+                    <p className="text-[11px] font-bold text-brand-ink uppercase tracking-wider">{getNextDeliveryDate()}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[8px] uppercase tracking-widest font-bold text-brand-ink/20 block">Billing Total</span>
+                    <p className="text-[11px] font-bold text-brand-ink uppercase tracking-wider">£{(profile.people * profile.recipesPerWeek * 8.5).toFixed(2)}</p>
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <span className="text-[8px] uppercase tracking-widest font-bold text-brand-ink/20 block">Billing Total</span>
-                  <p className="text-[11px] font-bold text-brand-ink uppercase tracking-wider">£{(profile.people * profile.recipesPerWeek * 8.5).toFixed(2)}</p>
+                <p className="text-[9px] font-serif italic text-brand-ink/30">Skip any week before Monday midnight.</p>
+              </div>
+            ) : (
+              <div className="mt-16 pt-10 border-t border-black/[0.05]">
+                <div className="text-center space-y-4">
+                  <p className="text-brand-ink/40 font-serif italic text-sm">No active subscription</p>
+                  <button className="bg-brand-sage text-white px-8 py-3 rounded text-[10px] uppercase tracking-widest font-bold hover:bg-brand-ink transition-all shadow-lg">
+                    Activate Subscription
+                  </button>
                 </div>
               </div>
-              <p className="text-[9px] font-serif italic text-brand-ink/30">Skip any week before Monday midnight.</p>
-            </div>
+            )}
           </div>
 
           {/* Side Card: The Dark Heritage Box (Spans 4 cols) */}
@@ -209,7 +228,7 @@ const Profile: React.FC<ProfileProps> = ({ profile, onUpdate, savedMealIds = [],
               <div className="space-y-6">
                 <div className="space-y-1 border-l border-white/10 pl-6">
                   <span className="text-[9px] uppercase tracking-[0.3em] font-bold opacity-30 block">Heritage Status</span>
-                  <span className="text-sm font-bold uppercase tracking-widest text-brand-sage">Gold Member</span>
+                  <span className="text-sm font-bold uppercase tracking-widest text-brand-sage">{memberTier} Member</span>
                 </div>
                 <div className="space-y-1 border-l border-white/10 pl-6">
                   <span className="text-[9px] uppercase tracking-[0.3em] font-bold opacity-30 block">Member Since</span>

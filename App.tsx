@@ -120,6 +120,7 @@ const App: React.FC = () => {
           allergies: profile.allergies || [],
           preferences: profile.preferences || [],
           createdAt: profile.created_at,
+          subscriptionStatus: profile.subscription_status || 'inactive',
         });
       } else {
         console.warn('No profile found for user:', uid);
@@ -399,6 +400,7 @@ const App: React.FC = () => {
               isLoggedIn={isLoggedIn}
               userName={userName}
               config={userProfile}
+              subscriptionStatus={userProfile.subscriptionStatus}
             />
 
             {isLoggedIn && (

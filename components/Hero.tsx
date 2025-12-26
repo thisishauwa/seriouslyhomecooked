@@ -8,9 +8,10 @@ interface HeroProps {
   isLoggedIn?: boolean;
   userName?: string;
   config?: BoxConfig;
+  subscriptionStatus?: 'active' | 'inactive' | 'paused' | 'cancelled';
 }
 
-const Hero: React.FC<HeroProps> = ({ onStartPlan, onBrowseMenu, isLoggedIn, userName, config }) => {
+const Hero: React.FC<HeroProps> = ({ onStartPlan, onBrowseMenu, isLoggedIn, userName, config, subscriptionStatus }) => {
   // Calculate next delivery date (next Thursday from today)
   const getNextDeliveryDay = () => {
     const today = new Date();
@@ -20,6 +21,8 @@ const Hero: React.FC<HeroProps> = ({ onStartPlan, onBrowseMenu, isLoggedIn, user
     nextThursday.setDate(today.getDate() + (daysUntilThursday === 0 ? 7 : daysUntilThursday));
     return nextThursday.toLocaleDateString('en-US', { weekday: 'long' });
   };
+
+  const hasActiveSubscription = subscriptionStatus === 'active';
 
   return (
     <section className="relative pt-32 pb-20 md:pt-40 md:pb-32 bg-white overflow-hidden text-center">
@@ -31,10 +34,17 @@ const Hero: React.FC<HeroProps> = ({ onStartPlan, onBrowseMenu, isLoggedIn, user
               What would you <br />
               <span className="italic text-brand-sage font-normal">like</span> for dinner?
             </h1>
-            <p className="text-xl md:text-2xl text-brand-ink/30 mb-12 max-w-2xl mx-auto font-serif tracking-tight leading-snug">
-              Your next meal kit for <span className="text-brand-ink font-bold not-italic">{config?.people} people</span> is arriving this {getNextDeliveryDay()}. <br/>
-              Ready to select your meals for next week?
-            </p>
+            {hasActiveSubscription ? (
+              <p className="text-xl md:text-2xl text-brand-ink/30 mb-12 max-w-2xl mx-auto font-serif tracking-tight leading-snug">
+                Your next meal kit for <span className="text-brand-ink font-bold not-italic">{config?.people} people</span> is arriving this {getNextDeliveryDay()}. <br/>
+                Ready to select your meals for next week?
+              </p>
+            ) : (
+              <p className="text-xl md:text-2xl text-brand-ink/30 mb-12 max-w-2xl mx-auto font-serif tracking-tight leading-snug">
+                Browse our chef-curated menu and <span className="text-brand-ink font-bold not-italic">start your subscription</span> to get <br className="hidden sm:block" />
+                fresh meal kits delivered weekly.
+              </p>
+            )}
           </div>
         ) : (
           <>

@@ -63,6 +63,7 @@ export interface UserProfile extends BoxConfig {
   allergies: string[];
   preferences: string[];
   createdAt?: string; // ISO date string from Supabase
+  subscriptionStatus?: 'active' | 'inactive' | 'paused' | 'cancelled';
 }
 
 export type View = 'HOME' | 'PLANS' | 'MENU' | 'CHECKOUT' | 'JOURNAL' | 'PROFILE' | 'ONBOARDING' | 'ADMIN';
