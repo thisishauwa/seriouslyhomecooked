@@ -3,31 +3,36 @@
 ## 🔴 CRITICAL - Payment & Subscription
 
 ### 1. **Payment Integration** (HIGH PRIORITY)
-- [ ] **Stripe Integration**
-  - [ ] Set up Stripe account
-  - [ ] Add Stripe SDK to project (`npm install @stripe/stripe-js @stripe/react-stripe-js`)
-  - [ ] Create Stripe checkout session
-  - [ ] Handle successful payment webhook
+- [ ] **Paystack Integration** ✅ Keys added!
+  - [ ] Install Paystack SDK (`npm install react-paystack`)
+  - [ ] Create subscription plans in Paystack dashboard
+  - [ ] Add Paystack script to index.html
+  - [ ] Create `lib/paystack.ts` client
+  - [ ] Handle successful payment callback
   - [ ] Update `subscription_status` to 'active' after payment
-  - [ ] Store payment method for recurring billing
+  - [ ] Store Paystack subscription/customer codes
   
 - [ ] **Onboarding Payment Step**
-  - [ ] Replace alert with actual Stripe checkout
-  - [ ] Create payment intent for subscription
-  - [ ] Handle payment success/failure
+  - [ ] Replace alert with Paystack payment popup
+  - [ ] Initialize Paystack with user email and plan
+  - [ ] Handle payment success/failure callbacks
+  - [ ] Update Supabase after successful payment
   - [ ] Redirect to menu after successful payment
 
 - [ ] **Checkout Payment**
-  - [ ] Add payment form to Checkout component
+  - [ ] Add Paystack payment to Checkout component
   - [ ] Check subscription status before checkout
   - [ ] If inactive, show "Subscribe to continue" modal
   - [ ] Process one-time or subscription payment
 
 **Files to modify:**
-- `components/Onboarding.tsx` - Line 241 (replace alert)
-- `components/Checkout.tsx` - Add payment processing
-- Create `lib/stripe.ts` - Stripe client setup
-- Create `components/PaymentModal.tsx` - Reusable payment form
+- `components/Onboarding.tsx` - Line 241 (replace alert with Paystack)
+- `components/Checkout.tsx` - Add Paystack payment
+- Create `lib/paystack.ts` - Paystack client setup
+- Create `api/paystack-webhook.ts` - Webhook handler
+- Add Paystack fields to `supabase-schema.sql`
+
+**See `PAYSTACK_INTEGRATION_GUIDE.md` for complete implementation!**
 
 ---
 
@@ -241,44 +246,59 @@
 
 ## 🛠️ Quick Implementation Guide
 
-### To Add Payment (Stripe):
+### To Add Payment (Paystack):
 
-1. **Install Stripe:**
+1. **Install Paystack:**
 ```bash
-npm install @stripe/stripe-js @stripe/react-stripe-js stripe
+npm install react-paystack
 ```
 
-2. **Add env variables:**
+2. **Add env variables:** ✅ Already done!
 ```env
-VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
-STRIPE_SECRET_KEY=sk_test_... (server-side only)
+VITE_PAYSTACK_PUBLIC_KEY=pk_test_xxx
+PAYSTACK_SECRET_KEY=sk_test_xxx
 ```
 
-3. **Create Stripe client:**
-```typescript
-// lib/stripe.ts
-import { loadStripe } from '@stripe/stripe-js';
-export const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+3. **Add Paystack script to index.html:**
+```html
+<script src="https://js.paystack.co/v1/inline.js"></script>
 ```
 
-4. **Create checkout session:**
+4. **Create Paystack client:**
 ```typescript
-// In Onboarding.tsx, replace alert with:
-const response = await fetch('/api/create-checkout-session', {
-  method: 'POST',
-  body: JSON.stringify({ priceId: 'price_xxx', userId })
-});
-const { sessionId } = await response.json();
-const stripe = await stripePromise;
-await stripe.redirectToCheckout({ sessionId });
+// lib/paystack.ts
+import { usePaystackPayment } from 'react-paystack';
+
+export const paystackConfig = {
+  publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
+  currency: 'GBP', // or 'NGN'
+};
 ```
 
-5. **Handle webhook:**
+5. **Use in Onboarding.tsx:**
 ```typescript
-// api/webhook.ts (Supabase Edge Function or Vercel API route)
-// Listen for 'checkout.session.completed' event
+const config = {
+  reference: new Date().getTime().toString(),
+  email: user.email,
+  amount: 5100, // £51.00 in pence
+  publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
+};
+
+const initializePayment = usePaystackPayment(config);
+
+<button onClick={() => initializePayment(onSuccess, onClose)}>
+  Subscribe & Pay Now
+</button>
+```
+
+6. **Handle webhook:**
+```typescript
+// api/paystack-webhook.ts
+// Listen for 'subscription.create' event
 // Update user's subscription_status to 'active'
 ```
+
+**See `PAYSTACK_INTEGRATION_GUIDE.md` for full details!**
 
 ---
 
