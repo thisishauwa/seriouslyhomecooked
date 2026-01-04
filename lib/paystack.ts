@@ -150,14 +150,14 @@ export const getPlanCode = (people: number, mealsPerWeek: number): string => {
   // You'll need to create these plans in Paystack dashboard first
   // Then update these codes with your actual plan codes
   const planMap: Record<string, string> = {
-    '2-2': 'PLN_2people2meals', // £34.00/week
-    '2-3': 'PLN_2people3meals', // £51.00/week
-    '2-4': 'PLN_2people4meals', // £68.00/week
-    '2-5': 'PLN_2people5meals', // £85.00/week
-    '4-2': 'PLN_4people2meals', // £68.00/week
-    '4-3': 'PLN_4people3meals', // £102.00/week
-    '4-4': 'PLN_4people4meals', // £136.00/week
-    '4-5': 'PLN_4people5meals', // £170.00/week
+    '2-2': 'PLN_okj9nf158ai0nlj', // £34.00/week
+    '2-3': 'PLN_xjnm09ctxe03ge6', // £51.00/week
+    '2-4': 'PLN_7qr6oi2hpvuxjd0', // £68.00/week
+    '2-5': 'PLN_en2qc30u0ihj9qm', // £85.00/week
+    '4-2': 'PLN_04v190u3x4asbc5', // £68.00/week
+    '4-3': 'PLN_0e4zj6t43fpczfz', // £102.00/week
+    '4-4': 'PLN_rl4ma4imm3veylp', // £136.00/week
+    '4-5': 'PLN_unfkd3blm046vx6', // £170.00/week
   };
 
   const key = `${people}-${mealsPerWeek}`;
